@@ -31,6 +31,176 @@
         </table>
       </div>
     </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">Register a Product</h5>
+            <div id="product-message"></div>
+            <form id="product-form">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label" for="product-name">Product name</label>
+                  <input class="form-control" id="product-name" name="product_name" minlength="2" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="brand">Brand</label>
+                  <input class="form-control" id="brand" name="brand" minlength="2" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="model-number">Model number</label>
+                  <input class="form-control" id="model-number" name="model_number">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="serial-number">Serial number</label>
+                  <input class="form-control" id="serial-number" name="serial_number">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="purchase-date">Purchase date</label>
+                  <input type="date" class="form-control" id="purchase-date" name="purchase_date" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="invoice-number">Invoice number</label>
+                  <input class="form-control" id="invoice-number" name="invoice_number" minlength="2" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="warranty-period">Warranty (months)</label>
+                  <input type="number" class="form-control" id="warranty-period"
+                         name="warranty_period_months" min="1" max="120" value="12" required>
+                </div>
+              </div>
+              <button class="btn btn-primary mt-4" type="submit">Register product</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">Submit a Warranty Claim</h5>
+            <div id="claim-message"></div>
+            <form id="claim-form">
+              <div class="mb-3">
+                <label class="form-label" for="claim-product">Product</label>
+                <select class="form-select" id="claim-product" name="product_id" required>
+                  <option value="">Register a product first</option>
+                  {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.product_name }} ({{ product.serial_number or "no serial" }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="claim-type">Claim type</label>
+                <input class="form-control" id="claim-type" name="claim_type"
+                       placeholder="Repair or replacement" minlength="2" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="claim-description">Issue description</label>
+                <textarea class="form-control" id="claim-description" name="description"
+                          rows="5" minlength="10" maxlength="2000" required></textarea>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit claim</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Registered Products</h5>
+        {% if products %}
+          <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+              <thead><tr><th>Product</th><th>Serial</th><th>Purchase date</th><th>Warranty expires</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for product in products %}
+                  <tr>
+                    <td>{{ product.brand }} {{ product.product_name }}</td>
+                    <td>{{ product.serial_number or "-" }}</td>
+                    <td>{{ product.purchase_date }}</td>
+                    <td>{{ product.warranty_expiry_date }}</td>
+                    <td><span class="badge text-bg-success">{{ product.status }}</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No products registered yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card mt-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Warranty Claims</h5>
+        {% if claims %}
+          <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+              <thead><tr><th>Product</th><th>Type</th><th>Description</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for claim in claims %}
+                  <tr>
+                    <td>{{ claim.product.product_name }}</td>
+                    <td>{{ claim.claim_type }}</td>
+                    <td>{{ claim.description }}</td>
+                    <td><span class="badge text-bg-warning">{{ claim.status }}</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No claims submitted yet.</p>
+        {% endif %}
+      </div>
+    </div>
   </div>
+  <script>
+    const formData = (form) => Object.fromEntries(new FormData(form).entries());
+    const showMessage = (id, message, type) => {
+      document.getElementById(id).innerHTML =
+        `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    };
+
+    document.getElementById("product-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = formData(event.currentTarget);
+      data.warranty_period_months = Number(data.warranty_period_months);
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        showMessage("product-message", result.detail || "Unable to register product.", "danger");
+        return;
+      }
+      showMessage("product-message", "Product registered successfully.", "success");
+      window.location.reload();
+    });
+
+    document.getElementById("claim-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = formData(event.currentTarget);
+      data.product_id = Number(data.product_id);
+      const response = await fetch("/api/claims", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        showMessage("claim-message", result.detail || "Unable to submit claim.", "danger");
+        return;
+      }
+      showMessage("claim-message", "Warranty claim submitted successfully.", "success");
+      window.location.reload();
+    });
+  </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserCreate(BaseModel):
@@ -8,6 +8,13 @@ class UserCreate(BaseModel):
     email: EmailStr
     full_name: str = Field(default="", max_length=120)
     password: str = Field(..., min_length=6, max_length=128)
+
+    @field_validator("username", "email", "full_name")
+    @classmethod
+    def trim_fields(cls, value: str | None):
+        if value is None:
+            return value
+        return value.strip()
 
 
 class UserRead(BaseModel):

@@ -14,19 +14,33 @@ class InvalidCredentialsError(Exception):
     pass
 
 
+def _normalize_username(value: str) -> str:
+    return value.strip()
+
+
+def _normalize_email(value: str) -> str:
+    return value.strip().lower()
+
+
 def register_user(db: Session, data: UserCreate) -> User:
+    username = _normalize_username(data.username)
+    email = _normalize_email(data.email)
+
     existing = (
         db.query(User)
-        .filter((User.username == data.username) | (User.email == data.email))
+        .filter(
+            (func.lower(User.username) == username.lower())
+            | (func.lower(User.email) == email)
+        )
         .first()
     )
     if existing:
         raise DuplicateUserError("Username or email is already registered.")
 
     user = User(
-        username=data.username,
-        email=data.email,
-        full_name=data.full_name or None,
+        username=username,
+        email=email,
+        full_name=data.full_name.strip() or None,
         hashed_password=hash_password(data.password),
         role="customer",
     )
