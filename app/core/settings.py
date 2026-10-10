@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./warranty_portal.db"
     SECRET_KEY: str = "dev-secret-key-change-me"
     SESSION_COOKIE: str = "warranty_session"
+    CORS_ORIGINS: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
