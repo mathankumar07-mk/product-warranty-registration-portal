@@ -23,10 +23,16 @@ app.add_middleware(
 	CORSMiddleware,
 	allow_origins=cors_origins,
 	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
+	allow_methods=["GET", "POST", "OPTIONS"],
+	allow_headers=["Content-Type"],
 )
-app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+app.add_middleware(
+	SessionMiddleware,
+	secret_key=settings.SECRET_KEY,
+	session_cookie=settings.SESSION_COOKIE,
+	same_site=settings.SESSION_COOKIE_SAMESITE,
+	https_only=settings.SESSION_COOKIE_SECURE,
+)
 
 app.include_router(auth.router)
 

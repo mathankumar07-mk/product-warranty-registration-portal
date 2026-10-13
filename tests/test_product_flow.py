@@ -1,11 +1,20 @@
 import os
-import tempfile
 
-os.environ["DATABASE_URL"] = "sqlite:///" + os.path.join(tempfile.mkdtemp(), "test.db")
+os.environ.setdefault(
+    "DATABASE_URL",
+    os.environ.get(
+        "TEST_DATABASE_URL",
+        "postgresql+psycopg2://warranty_app:warranty_dev@localhost:5432/warranty_test",
+    ),
+)
 
 from fastapi.testclient import TestClient
 
+from app.core.database import Base, engine
 from app.main import app
+
+Base.metadata.drop_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 client = TestClient(app)
 

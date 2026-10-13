@@ -65,11 +65,11 @@ Many customers lose their warranty cards or purchase receipts, making it difficu
 
 ### Backend
 
-* Spring Boot (Java)
+* FastAPI (Python)
 
 ### Database
 
-* MySQL
+* PostgreSQL
 
 ### Tools
 
@@ -235,13 +235,16 @@ cd product-warranty-registration-portal
 
 ### Configure Database
 
-* Create a MySQL database.
-* Update `application.properties` with your database credentials.
+* Create a PostgreSQL database (default `warranty_portal`).
+* Copy `.env.example` to `.env` and set `DATABASE_URL`
+  (e.g. `postgresql+psycopg2://warranty_app:changeme@localhost:5432/warranty_portal`)
+  or the `POSTGRES_*` parts.
 
 ### Run the Application
 
 ```bash
-mvn spring-boot:run
+pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 ---
