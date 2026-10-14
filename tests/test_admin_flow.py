@@ -302,3 +302,22 @@ def test_existing_customer_flows_still_work():
     r = anon_client.get("/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
+
+
+def test_admin_nav_link_visible_only_for_admins():
+    # Regression test: /dashboard shows the Admin Dashboard link for
+    # admins and hides it for customers; backend still enforces 403.
+    r = admin_client.get("/dashboard")
+    assert r.status_code == 200, r.text
+    assert "/admin/dashboard" in r.text
+    assert "Admin Dashboard" in r.text
+
+    r = customer_client.get("/dashboard")
+    assert r.status_code == 200, r.text
+    assert "/admin/dashboard" not in r.text
+
+    r = customer_client.get("/admin/dashboard", follow_redirects=False)
+    assert r.status_code == 403, r.text
+    r = admin_client.get("/admin/dashboard")
+    assert r.status_code == 200, r.text
+    assert "Admin Dashboard" in r.text
