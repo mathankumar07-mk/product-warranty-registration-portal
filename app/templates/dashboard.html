@@ -11,6 +11,9 @@
     <div class="container">
       <a class="navbar-brand" href="/dashboard">Warranty Portal</a>
       <div class="navbar-nav ms-auto">
+        {% if user.role == "admin" %}
+          <a class="nav-link" href="/admin/dashboard">Admin Dashboard</a>
+        {% endif %}
         <a class="nav-link" href="/logout">Logout</a>
       </div>
     </div>

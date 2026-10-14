@@ -35,3 +35,14 @@ class ProductRead(BaseModel):
     warranty_expiry_date: date
     status: str
     created_at: datetime
+
+
+class AdminProductUpdate(BaseModel):
+    product_name: str = Field(..., min_length=2, max_length=120)
+    brand: str = Field(..., min_length=2, max_length=80)
+    model_number: str | None = Field(default=None, max_length=80)
+    serial_number: str | None = Field(default=None, max_length=120)
+    purchase_date: date
+    invoice_number: str = Field(..., min_length=2, max_length=80)
+    warranty_period_months: int = Field(..., ge=1, le=120)
+    status: str = Field(..., min_length=2, max_length=20)

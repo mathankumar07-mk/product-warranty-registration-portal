@@ -4,7 +4,7 @@
 # postgresql://product_warranty_db_user:<password>@dpg-db6aivqd0e5s73a18fjg-a/product_warranty_db
 services:
   - type: web
-    name: product-warranty-api
+    name: product-warranty-registration-portal
     runtime: python
     repo: https://github.com/mathankumar07-mk/product-warranty-registration-portal.git
     branch: main
@@ -30,4 +30,6 @@ services:
       - key: SESSION_COOKIE_SECURE
         value: "true"
       - key: DATABASE_URL
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
         sync: false

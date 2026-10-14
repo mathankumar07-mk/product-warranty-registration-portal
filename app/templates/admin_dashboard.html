@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Admin Dashboard</h2>
+  <span class="badge text-bg-dark">role: {{ current_user.role }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <h6 class="text-muted">Total customers</h6>
+      <h3>{{ stats.total_customers }}</h3>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <h6 class="text-muted">Total products</h6>
+      <h3>{{ stats.total_products }}</h3>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <h6 class="text-muted">Total registrations</h6>
+      <h3>{{ stats.total_registrations }}</h3>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm"><div class="card-body">
+      <h6 class="text-muted">Total claims</h6>
+      <h3>{{ stats.total_claims }}</h3>
+      <small class="text-warning">{{ stats.pending_claims }} pending</small>
+    </div></div>
+  </div>
+</div>
+
+<div class="mb-3">
+  <a class="btn btn-primary btn-sm" href="/admin/customers">Manage customers</a>
+  <a class="btn btn-secondary btn-sm" href="/admin/products">Manage products</a>
+  <a class="btn btn-warning btn-sm" href="/admin/claims">Review claims</a>
+  <a class="btn btn-outline-secondary btn-sm" href="/dashboard">Customer view</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h5 class="card-title">Recent registrations</h5>
+      {% if stats.recent_products %}
+        <div class="table-responsive"><table class="table table-striped table-sm mb-0">
+          <thead><tr><th>Product</th><th>Owner</th><th>Purchased</th></tr></thead>
+          <tbody>
+          {% for p in stats.recent_products %}
+            <tr>
+              <td>{{ p.brand }} {{ p.product_name }}</td>
+              <td>{{ p.user.username if p.user else p.user_id }}</td>
+              <td>{{ p.purchase_date }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        <p class="text-muted mb-0">No registrations yet.</p>
+      {% endif %}
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100"><div class="card-body">
+      <h5 class="card-title">Pending claims</h5>
+      {% if stats.pending_claim_list %}
+        <div class="table-responsive"><table class="table table-striped table-sm mb-0">
+          <thead><tr><th>ID</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+          {% for c in stats.pending_claim_list %}
+            <tr>
+              <td>#{{ c.id }}</td>
+              <td>{{ c.claim_type }}</td>
+              <td><span class="badge text-bg-warning">{{ c.status }}</span></td>
+              <td><a class="btn btn-sm btn-outline-primary" href="/admin/claims?status=pending">Review</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+      {% else %}
+        <p class="text-muted mb-0">No pending claims.</p>
+      {% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

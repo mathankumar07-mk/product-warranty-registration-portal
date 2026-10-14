@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_current_user, get_logged_in_user
+from app.core.csrf import get_csrf_token
 from app.core.database import get_db
 from app.models import User
 from app.schemas.claim import WarrantyClaimCreate, WarrantyClaimRead
@@ -16,23 +17,8 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
-def get_logged_in_user(request: Request, db: Session = Depends(get_db)) -> User | None:
-    username = request.session.get("username")
-    if not username:
-        return None
-    normalized = str(username).strip()
-    if not normalized:
-        return None
-    return db.query(User).filter(func.lower(User.username) == normalized.lower()).first()
-
-
-def get_current_user(
-    request: Request, db: Session = Depends(get_db)
-) -> User:
-    user = get_logged_in_user(request, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    return user
+def _base_context(request: Request, user: User | None) -> dict:
+    return {"current_user": user, "csrf_token": get_csrf_token(request)}
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -49,7 +35,9 @@ def login_page(
     if user:
         return RedirectResponse(url="/dashboard", status_code=303)
     return templates.TemplateResponse(
-        request=request, name="login.html", context={"error": None}
+        request=request,
+        name="login.html",
+        context={"error": None, **_base_context(request, user)},
     )
 
 
@@ -66,7 +54,7 @@ def login_submit(
         return templates.TemplateResponse(
             request=request,
             name="login.html",
-            context={"error": str(exc)},
+            context={"error": str(exc), **_base_context(request, None)},
             status_code=400,
         )
 
@@ -83,7 +71,7 @@ def register_page(
     return templates.TemplateResponse(
         request=request,
         name="register.html",
-        context={"error": None, "form": {}},
+        context={"error": None, "form": {}, **_base_context(request, user)},
     )
 
 
@@ -109,7 +97,11 @@ def register_submit(
         return templates.TemplateResponse(
             request=request,
             name="register.html",
-            context={"error": str(exc), "form": form_data},
+            context={
+                "error": str(exc),
+                "form": form_data,
+                **_base_context(request, None),
+            },
             status_code=400,
         )
 

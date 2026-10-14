@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     SESSION_COOKIE_SAMESITE: str = "lax"
     SESSION_COOKIE_SECURE: bool = False
+    INITIAL_ADMIN_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

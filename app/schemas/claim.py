@@ -19,3 +19,7 @@ class WarrantyClaimRead(BaseModel):
     description: str
     status: str
     created_at: datetime
+
+
+class ClaimStatusUpdate(BaseModel):
+    status: str = Field(..., min_length=2, max_length=20)
